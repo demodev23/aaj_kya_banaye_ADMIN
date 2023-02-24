@@ -1,2 +1,3 @@
-# aaj_kya_banaye_ADMIN
- admin panel for aaj kya banaye
+# aaj_kya_banaye_admin
+
+A new Flutter project.

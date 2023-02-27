@@ -27,11 +27,9 @@ class _ProfilePageState extends State<ProfilePage> {
   final form_key = GlobalKey<FormState>();
 
   final TextEditingController title_controller = TextEditingController();
-  final TextEditingController meal_type_controller = TextEditingController();
   bool is_jain = false;
   var photo;
   bool is_image_uploaded = false;
-  List<dynamic> items = [];
 
   List<String> _selectedItems = [];
   bool on_tap = false;
@@ -40,6 +38,30 @@ class _ProfilePageState extends State<ProfilePage> {
   late String filename;
   String docid = cards_database.doc().id.toString();
   bool file_uploaded = false;
+
+  List<String> meal = ["Breakfast", "Lunch", "Snacks", "Dinner"];
+  List<dynamic> cuisine_item = [];
+  String meal_type_dropdownvalue = 'Breakfast';
+  String cuisine_type_dropdownvalue = "";
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _retrieveData();
+  }
+
+  Future<void> _retrieveData() async {
+    List<dynamic> temp = await cuisine_database.get().then(
+      (value) {
+        return value.docs.single.get('cuisine');
+      },
+    );
+    cuisine_type_dropdownvalue = temp[0].toString();
+    setState(() {
+      cuisine_item = temp;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +73,7 @@ class _ProfilePageState extends State<ProfilePage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              SizedBox(
+              const SizedBox(
                 height: 20,
               ),
               GestureDetector(
@@ -102,7 +124,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   }
                 },
               ),
-              SizedBox(
+              const SizedBox(
                 height: 20,
               ),
               is_image_uploaded
@@ -112,7 +134,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           AsyncSnapshot<String> snapshot) {
                         if (is_image_uploaded) {
                           return Container(
-                              margin: EdgeInsets.only(top: 10),
+                              margin: const EdgeInsets.only(top: 10),
                               height: 150,
                               child: ClipRRect(
                                   child: Image.file(
@@ -126,24 +148,120 @@ class _ProfilePageState extends State<ProfilePage> {
                         );
                       },
                     )
-                  : SizedBox(
+                  : const SizedBox(
                       height: 20,
                     ),
-              SizedBox(
+              const SizedBox(
                 height: 20,
               ),
               name_field(context, "Enter Dish Name", title_controller),
-              SizedBox(
+              const SizedBox(
                 height: 20,
               ),
-              name_field(context, "Enter Meal Type", meal_type_controller),
-              SizedBox(
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Text(
+                    " Select Meal Type -:",
+                    style: TextStyle(fontSize: extra_large, fontWeight: bold),
+                  ),
+                  DropdownButton(
+                    // Initial Value
+                    value: meal_type_dropdownvalue,
+                    itemHeight: 50,
+                    style: TextStyle(
+                        fontSize: extra_large, fontWeight: bold, color: black),
+                    // Down Arrow Icon
+                    icon: const Icon(
+                      Icons.arrow_drop_down,
+                      size: 30,
+                    ),
+                    dropdownColor: offWhite,
+                    // Array list of items
+                    items: meal.map((String items) {
+                      return DropdownMenuItem(
+                        value: items,
+                        child: Text(
+                          items,
+                        ),
+                      );
+                    }).toList(),
+                    // After selecting the desired option,it will
+                    // change button value to selected value
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        meal_type_dropdownvalue = newValue!;
+                      });
+                    },
+                  ),
+                ],
+              ),
+              const SizedBox(
+                height: 20,
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  const Text(
+                    " Select Cuisine Type -:",
+                    style: TextStyle(fontSize: large, fontWeight: bold),
+                  ),
+                  DropdownButton(
+                    value: cuisine_type_dropdownvalue,
+                    items: cuisine_item.map((value) {
+                      return DropdownMenuItem<dynamic>(
+                        value: value,
+                        child: Text(value.toString()),
+                      );
+                    }).toList(),
+                    onChanged: (selectedValue) {
+                      // Do something with the selected value
+                      setState(() {
+                        cuisine_type_dropdownvalue = selectedValue;
+                      });
+                    },
+                  ),
+                ],
+              ),
+              /*StreamBuilder(
+                  stream: cuisine_database.snapshots(),
+                  builder:
+                      (context, AsyncSnapshot<QuerySnapshot> cuisinesnapshot) {
+                    if (cuisinesnapshot.hasData) {
+                      var temp =
+                          cuisinesnapshot.data!.docs.first.get('cuisine');
+                      print("this is temp = ${temp}");
+                      cuisine_item = [];
+                      for (int i = 0; i < temp.length; i++) {
+                        cuisine_item.add(temp[i].toString());
+                      }
+
+                      print("this is cuisine_item = ${cuisine_item}");
+                      if (cuisine_item.isNotEmpty) {
+                        return Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            Text(
+                              " Select Cuisine Type -:",
+                              style: TextStyle(
+                                  fontSize: extra_large, fontWeight: bold),
+                            ),
+
+                          ],
+                        );
+                      }
+                    }
+                    return custom_loading();
+                  }),
+
+                  */
+              const SizedBox(
                 height: 20,
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(
+                  const Text(
                     " is it Jain ??",
                     style: TextStyle(
                       fontSize: large,
@@ -160,7 +278,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                 ],
               ),
-              SizedBox(
+              const SizedBox(
                 height: 20,
               ),
               ElevatedButton(
@@ -168,7 +286,8 @@ class _ProfilePageState extends State<ProfilePage> {
                     if (form_key.currentState!.validate() && image != null) {
                       cards_database.doc(docid).set({
                         'title': title_controller.text,
-                        'meal_type': meal_type_controller.text,
+                        'meal_type': meal_type_dropdownvalue,
+                        'cuisine': cuisine_type_dropdownvalue,
                         'is_jain': is_jain,
                       }, SetOptions(merge: true));
 
@@ -178,7 +297,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => ProfilePage()));
+                              builder: (context) => const ProfilePage()));
                     }
                   },
                   style: const ButtonStyle(
@@ -195,7 +314,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           fontWeight: FontWeight.w600),
                     ),
                   )),
-              SizedBox(
+              const SizedBox(
                 height: 20,
               ),
             ],

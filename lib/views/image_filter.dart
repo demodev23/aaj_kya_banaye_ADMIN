@@ -93,7 +93,9 @@ class _ImageFilterScreenState extends State<ImageFilterScreen> {
           ),
           InkWell(
             onTap: () {
-              Navigator.pop(context, widget.image);
+              setState(() {
+                Navigator.pop(context, widget.image);
+              });
             },
             child: Container(
               decoration: BoxDecoration(

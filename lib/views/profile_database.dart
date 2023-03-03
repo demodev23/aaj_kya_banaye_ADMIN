@@ -21,4 +21,8 @@ class Storage {
 
     return download_url;
   }
+
+  delete_photo(String filename) async {
+    await storage.ref('cards/${filename}').delete();
+  }
 }

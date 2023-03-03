@@ -15,4 +15,7 @@ final interest_database = FirebaseFirestore.instance.collection('interest');
 final CollectionReference cuisine_database =
     FirebaseFirestore.instance.collection('cuisine');
 
+final CollectionReference meal_type_database =
+    FirebaseFirestore.instance.collection('meal_type');
+
 final Storage storage = Storage();

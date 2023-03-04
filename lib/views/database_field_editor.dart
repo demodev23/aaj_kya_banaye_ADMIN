@@ -12,10 +12,12 @@ class DatabaseFieldEditor extends StatefulWidget {
 }
 
 class _DatabaseFieldEditorState extends State<DatabaseFieldEditor> {
-  bool CuisineEditor = false;
+  bool CuisineEditor = true;
   bool MealTypeEditor = false;
-  TextEditingController cuisine_controller = TextEditingController();
+  bool InterestEditor = false;
 
+  TextEditingController cuisine_controller = TextEditingController();
+  TextEditingController interest_controller = TextEditingController();
   TextEditingController mealtype_controller = TextEditingController();
   @override
   Widget build(BuildContext context) {
@@ -34,6 +36,7 @@ class _DatabaseFieldEditorState extends State<DatabaseFieldEditor> {
                     setState(() {
                       CuisineEditor = true;
                       MealTypeEditor = false;
+                      InterestEditor = false;
                     });
                   },
                   child: const Text("Cuisine Editor")),
@@ -42,9 +45,19 @@ class _DatabaseFieldEditorState extends State<DatabaseFieldEditor> {
                     setState(() {
                       CuisineEditor = false;
                       MealTypeEditor = true;
+                      InterestEditor = false;
                     });
                   },
                   child: const Text("Mealtype Editor")),
+              ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      CuisineEditor = false;
+                      MealTypeEditor = false;
+                      InterestEditor = true;
+                    });
+                  },
+                  child: const Text("Interest Editor")),
             ],
           ),
           Visibility(
@@ -241,6 +254,121 @@ class _DatabaseFieldEditorState extends State<DatabaseFieldEditor> {
                                                         'meal_type': FieldValue
                                                             .arrayRemove([
                                                           meal_type_data[index]
+                                                        ])
+                                                      });
+                                                      setState(() {
+                                                        ScaffoldMessenger.of(
+                                                                context)
+                                                            .showSnackBar(
+                                                                const SnackBar(
+                                                                    content: Text(
+                                                                        "Deleted Successfully")));
+                                                      });
+                                                      Navigator.pop(context);
+                                                    },
+                                                    child: Text("Yes")),
+                                                ElevatedButton(
+                                                    onPressed: () {
+                                                      Navigator.pop(context);
+                                                    },
+                                                    child: Text("No")),
+                                              ],
+                                              content: Text(
+                                                  "Are You Sure You Want to Delete ?"),
+                                            );
+                                          });
+                                    },
+                                  );
+                                },
+                              ),
+                            );
+                          }
+                          return CircularProgressIndicator();
+                        })
+                  ],
+                ),
+              )),
+          Visibility(
+              visible: InterestEditor,
+              child: Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Padding(
+                      padding: EdgeInsets.all(20),
+                      child: Text("Add New Interest",
+                          style: TextStyle(fontSize: 25, fontWeight: bold)),
+                    ),
+                    name_field(
+                        context, "Enter Interest Name", interest_controller),
+                    ElevatedButton(
+                        onPressed: () async {
+                          if (interest_controller.text.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                    content: Text("Please Enter Some Text")));
+                          } else {
+                            final docQuery = interest_database.limit(1);
+                            final docSnapshot = await docQuery.get();
+
+                            // Get the reference to the document from the query snapshot
+                            final docRef = docSnapshot.docs.first.reference;
+
+                            // Use the update method to append the new value to the existing array
+                            await docRef.update({
+                              'interest': FieldValue.arrayUnion(
+                                  [interest_controller.text])
+                            });
+                            setState(() {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content: Text("Added Successfully")));
+                              interest_controller.text = "";
+                            });
+                          }
+                        },
+                        child: const Text("ADD")),
+                    const Padding(
+                      padding: EdgeInsets.all(20),
+                      child: Text("Delete Existing",
+                          style: TextStyle(fontSize: 25, fontWeight: bold)),
+                    ),
+                    StreamBuilder(
+                        stream: interest_database.snapshots(),
+                        builder: (context, snapshot) {
+                          if (snapshot.hasData) {
+                            List<dynamic> interest_data =
+                                snapshot.data!.docs.first.get('interest');
+                            return Expanded(
+                              child: ListView.builder(
+                                itemCount: interest_data.length,
+                                itemBuilder: (context, index) {
+                                  return ListTile(
+                                    title:
+                                        Text(interest_data[index].toString()),
+                                    onTap: () {
+                                      showDialog(
+                                          context: context,
+                                          builder: (context) {
+                                            return AlertDialog(
+                                              actions: [
+                                                ElevatedButton(
+                                                    onPressed: () async {
+                                                      final docQuery =
+                                                          interest_database
+                                                              .limit(1);
+                                                      final docSnapshot =
+                                                          await docQuery.get();
+
+                                                      // Get the reference to the document from the query snapshot
+                                                      final docRef = docSnapshot
+                                                          .docs.first.reference;
+
+                                                      // Use the update method to append the new value to the existing array
+                                                      await docRef.update({
+                                                        'interest': FieldValue
+                                                            .arrayRemove([
+                                                          interest_data[index]
                                                         ])
                                                       });
                                                       setState(() {
